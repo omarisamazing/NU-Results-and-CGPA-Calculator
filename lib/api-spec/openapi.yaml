@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: results
+    description: NU exam result operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,61 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /results/lookup:
+    post:
+      operationId: lookupResult
+      tags: [results]
+      summary: Look up NU exam result
+      description: Fetches result from the NU results portal for a given exam, year, roll and registration number.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResultQuery"
+      responses:
+        "200":
+          description: Result found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResultData"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No result found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: Error communicating with NU portal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /results/exam-names:
+    get:
+      operationId: listExamNames
+      tags: [results]
+      summary: List supported examination names
+      description: Returns a static list of examination names supported for lookup.
+      responses:
+        "200":
+          description: List of exam names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +91,73 @@ components:
       required:
         - status
 
+    ResultQuery:
+      type: object
+      required:
+        - examName
+        - examYear
+        - roll
+        - registrationNo
+      properties:
+        examName:
+          type: string
+          description: Examination name, e.g. "Bachelor Degree Honours 4th Year"
+        examYear:
+          type: string
+          description: Examination year, e.g. "2023"
+        roll:
+          type: string
+          description: Exam roll number
+        registrationNo:
+          type: string
+          description: Registration number
+
+    CourseResult:
+      type: object
+      required:
+        - code
+        - subject
+        - grade
+      properties:
+        code:
+          type: string
+        subject:
+          type: string
+        grade:
+          type: string
+        gradePoint:
+          type: ["number", "null"]
+
+    ResultData:
+      type: object
+      required:
+        - examName
+        - examYear
+        - roll
+        - registrationNo
+        - courses
+      properties:
+        examName:
+          type: string
+        examYear:
+          type: string
+        roll:
+          type: string
+        registrationNo:
+          type: string
+        studentName:
+          type: ["string", "null"]
+        cgpa:
+          type: ["number", "null"]
+        courses:
+          type: array
+          items:
+            $ref: "#/components/schemas/CourseResult"
+
+    ApiError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string

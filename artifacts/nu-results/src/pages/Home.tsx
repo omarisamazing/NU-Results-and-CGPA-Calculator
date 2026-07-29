@@ -1,0 +1,273 @@
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { motion } from "framer-motion"
+import { ChevronRight, Loader2 } from "lucide-react"
+
+import { useListExamNames, useLookupResult, getListExamNamesQueryKey } from "@workspace/api-client-react"
+import { ResultData, ResultQuery, ApiError } from "@workspace/api-client-react/src/generated/api.schemas"
+import { ErrorType } from "@workspace/api-client-react/src/custom-fetch"
+
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+const formSchema = z.object({
+  examName: z.string().min(1, "Please select an examination"),
+  examYear: z.string().min(4, "Enter a valid year").max(4),
+  roll: z.string().min(1, "Roll number is required"),
+  registrationNo: z.string().min(1, "Registration number is required"),
+})
+
+export default function Home() {
+  const { data: examNames, isLoading: isExamsLoading } = useListExamNames()
+  const lookupMutation = useLookupResult()
+
+  const [result, setResult] = useState<ResultData | null>(null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      examName: "",
+      examYear: "",
+      roll: "",
+      registrationNo: "",
+    },
+  })
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    setErrorMsg(null)
+    setResult(null)
+    
+    lookupMutation.mutate(
+      { data: values },
+      {
+        onSuccess: (data) => {
+          setResult(data)
+        },
+        onError: (err) => {
+          setErrorMsg(err.error?.error || "Failed to lookup result")
+        }
+      }
+    )
+  }
+
+  return (
+    <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto items-stretch">
+      {/* Search Sidebar / Form Panel */}
+      <div className="w-full md:w-[400px] lg:w-[460px] p-6 md:p-12 md:border-r border-border/40 shrink-0">
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter mb-2">Query.</h1>
+          <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">National University Result System</p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="examName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Examination</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="rounded-none border-b-2 border-t-0 border-l-0 border-r-0 border-border focus:border-foreground focus:ring-0 px-0 h-12 bg-transparent">
+                        <SelectValue placeholder={isExamsLoading ? "Loading..." : "Select Examination"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {examNames?.map((name) => (
+                        <SelectItem key={name} value={name} className="font-sans">
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="font-mono text-[10px]" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="examYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Exam Year</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="e.g. 2023" 
+                      {...field} 
+                      className="rounded-none border-b-2 border-t-0 border-l-0 border-r-0 border-border focus-visible:border-foreground focus-visible:ring-0 px-0 h-12 bg-transparent text-lg font-mono" 
+                    />
+                  </FormControl>
+                  <FormMessage className="font-mono text-[10px]" />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="roll"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Roll No</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="7890123" 
+                        {...field} 
+                        className="rounded-none border-b-2 border-t-0 border-l-0 border-r-0 border-border focus-visible:border-foreground focus-visible:ring-0 px-0 h-12 bg-transparent font-mono text-lg" 
+                      />
+                    </FormControl>
+                    <FormMessage className="font-mono text-[10px]" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="registrationNo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Reg No</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="16223456" 
+                        {...field} 
+                        className="rounded-none border-b-2 border-t-0 border-l-0 border-r-0 border-border focus-visible:border-foreground focus-visible:ring-0 px-0 h-12 bg-transparent font-mono text-lg" 
+                      />
+                    </FormControl>
+                    <FormMessage className="font-mono text-[10px]" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="pt-8">
+              <Button 
+                type="submit" 
+                disabled={lookupMutation.isPending} 
+                className="w-full rounded-full h-14 text-sm font-semibold uppercase tracking-widest flex items-center justify-between px-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
+              >
+                {lookupMutation.isPending ? "Searching..." : "Retrieve Transcript"}
+                {lookupMutation.isPending ? <Loader2 className="animate-spin w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
+
+      {/* Result Panel */}
+      <div className="flex-1 bg-muted/30 p-6 md:p-12 overflow-y-auto min-h-[50vh]">
+        {lookupMutation.isPending && (
+          <div className="w-full max-w-3xl mx-auto space-y-8 animate-pulse">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-32 rounded-none" />
+              <Skeleton className="h-16 w-64 rounded-none" />
+              <Skeleton className="h-4 w-48 rounded-none" />
+            </div>
+            <div className="space-y-3 pt-8">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <Skeleton key={i} className="h-12 w-full rounded-none" />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {errorMsg && !lookupMutation.isPending && (
+          <div className="w-full max-w-3xl mx-auto pt-12">
+            <div className="border border-destructive/50 bg-destructive/5 p-6 border-l-4 border-l-destructive">
+              <h3 className="font-mono text-destructive uppercase tracking-widest text-xs mb-2">System Error</h3>
+              <p className="font-mono text-sm text-foreground">{errorMsg}</p>
+            </div>
+          </div>
+        )}
+
+        {result && !lookupMutation.isPending && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-full max-w-3xl mx-auto space-y-16"
+          >
+            {/* Header info */}
+            <div>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-border/50 pb-8">
+                <div>
+                  <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">
+                    {result.examName} • {result.examYear}
+                  </h2>
+                  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
+                    {result.studentName || "Unknown Candidate"}
+                  </h1>
+                  <div className="mt-4 flex gap-6 font-mono text-sm text-muted-foreground">
+                    <div><span className="uppercase text-[10px] tracking-wider block mb-1">Roll No</span><span className="text-foreground">{result.roll}</span></div>
+                    <div><span className="uppercase text-[10px] tracking-wider block mb-1">Reg No</span><span className="text-foreground">{result.registrationNo}</span></div>
+                  </div>
+                </div>
+
+                {result.cgpa !== undefined && result.cgpa !== null && (
+                  <div className="text-right shrink-0">
+                    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block mb-2">Final CGPA</span>
+                    <span className="text-6xl md:text-7xl font-semibold tracking-tighter">{result.cgpa.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Courses Table */}
+            <div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                    <TableHead className="font-mono uppercase text-[10px] tracking-widest w-[100px]">Code</TableHead>
+                    <TableHead className="font-mono uppercase text-[10px] tracking-widest">Subject</TableHead>
+                    <TableHead className="font-mono uppercase text-[10px] tracking-widest text-right">Grade</TableHead>
+                    <TableHead className="font-mono uppercase text-[10px] tracking-widest text-right w-[100px]">Point</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {result.courses.map((course, i) => (
+                    <motion.tr 
+                      key={course.code + i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      className="border-b border-border/30 hover:bg-muted/30 transition-colors group"
+                    >
+                      <TableCell className="font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">{course.code}</TableCell>
+                      <TableCell className="font-sans font-medium">{course.subject}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold">{course.grade}</TableCell>
+                      <TableCell className="text-right font-mono text-xs text-muted-foreground">{course.gradePoint !== null && course.gradePoint !== undefined ? course.gradePoint.toFixed(2) : "-"}</TableCell>
+                    </motion.tr>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            
+            <div className="flex justify-center pb-12">
+              <Button variant="outline" className="rounded-full px-8 py-6 font-mono text-xs uppercase tracking-widest border-border/50 bg-transparent hover:bg-muted/50" onClick={() => window.print()}>
+                Print Transcript
+              </Button>
+            </div>
+          </motion.div>
+        )}
+
+        {!result && !lookupMutation.isPending && !errorMsg && (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground/50">
+            <div className="text-center max-w-sm">
+              <div className="font-mono text-xs uppercase tracking-widest mb-4">Awaiting Input</div>
+              <p className="font-sans text-sm">Enter the candidate's exam details in the panel to retrieve the academic transcript.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

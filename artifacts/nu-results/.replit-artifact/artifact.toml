@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "NU Results"
+version = "1.0.0"
+id = "artifacts/nu-results"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25931
+
+[services.development]
+run = "pnpm --filter @workspace/nu-results run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/nu-results", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/nu-results/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25931"
+BASE_PATH = "/"
