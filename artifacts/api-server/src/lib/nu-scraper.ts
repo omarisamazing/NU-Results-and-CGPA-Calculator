@@ -15,6 +15,17 @@ import { logger } from "./logger";
 const BASE_URL = "https://results.nu.ac.bd";
 const FORM_URL = `${BASE_URL}/honours`;
 
+// Map human-readable exam names → the numeric codes the NU form uses
+export const EXAM_NAME_CODES: Record<string, string> = {
+  "Bachelor Degree Honours 1st Year": "2201",
+  "Bachelor Degree Honours 2nd Year": "2202",
+  "Bachelor Degree Honours 3rd Year": "2203",
+  "Bachelor Degree Honours 4th Year": "2204",
+  "Bachelor Degree Honours Consolidated Result": "2205",
+};
+
+export const EXAM_NAMES = Object.keys(EXAM_NAME_CODES);
+
 export interface CourseResult {
   code: string;
   subject: string;
@@ -37,7 +48,7 @@ export interface LookupParams {
 
 /** Safely evaluate a simple "A op B =" arithmetic CAPTCHA without eval(). */
 function solveCaptcha(text: string): number {
-  const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)\s*=/);
+  const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
   if (!match) {
     throw new Error(`Cannot parse CAPTCHA expression: "${text}"`);
   }
@@ -53,21 +64,17 @@ function solveCaptcha(text: string): number {
   }
 }
 
-/** Try multiple cheerio selectors to locate the CAPTCHA arithmetic expression. */
+/** Extract the arithmetic CAPTCHA from the NU form page. */
 function extractCaptcha($: cheerio.CheerioAPI): string {
-  const arithmetic = /\d+\s*[\+\-\*\/]\s*\d+\s*=/;
+  const arithmetic = /\d+\s*[\+\-\*\/]\s*\d+/;
 
-  const candidates = [
-    $("[class*='captcha']").text(),
-    $("[id*='captcha']").text(),
-    $("label[for*='captcha']").text(),
-    $("input[name*='captcha']").closest("div, td, p").text(),
-  ];
+  // Primary: the bold span containing the arithmetic
+  const fromBoldSpan = $("span.fw-bold").text().trim();
+  if (arithmetic.test(fromBoldSpan)) return fromBoldSpan;
 
-  for (const c of candidates) {
-    const t = c.trim();
-    if (arithmetic.test(t)) return t;
-  }
+  // Secondary: any span with fs-5
+  const fromFs5 = $("span.fs-5").text().trim();
+  if (arithmetic.test(fromFs5)) return fromFs5;
 
   // Fallback: walk all text nodes
   let found = "";
@@ -80,29 +87,48 @@ function extractCaptcha($: cheerio.CheerioAPI): string {
   return found;
 }
 
+/** Parse Set-Cookie headers → cookie string for next request. */
+function cookiesFromHeaders(headers: Record<string, unknown>): string {
+  const raw = headers["set-cookie"];
+  const list: string[] = Array.isArray(raw) ? raw : raw ? [String(raw)] : [];
+  return list.map((c) => c.split(";")[0]).join("; ");
+}
+
+/** Extract the XSRF-TOKEN value from a cookie string (URL-decoded). */
+function xsrfFromCookies(cookieHeader: string): string {
+  const m = cookieHeader.match(/XSRF-TOKEN=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
 /**
  * Look up an NU exam result.
  * One request per call — never loop over this function.
  */
 export async function lookupNuResult(params: LookupParams): Promise<ScrapedResult> {
-  logger.info({ roll: params.roll, examName: params.examName }, "Fetching NU result form");
+  const examCode = EXAM_NAME_CODES[params.examName];
+  if (!examCode) {
+    throw new Error(`Unknown examination name: "${params.examName}"`);
+  }
 
-  // Step 1: GET the search form page and capture the session cookie
+  logger.info({ roll: params.roll, examName: params.examName, examCode }, "Fetching NU result form");
+
+  // Step 1: GET the search form page — captures session + XSRF cookies
   const getResp = await axios.get(FORM_URL, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; NU-result-lookup/1.0)",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
     },
     maxRedirects: 5,
     timeout: 15_000,
   });
 
-  const rawCookies: string[] = (getResp.headers["set-cookie"] as string[] | undefined) ?? [];
-  const cookieHeader = rawCookies.map((c) => c.split(";")[0]).join("; ");
+  const cookieHeader = cookiesFromHeaders(getResp.headers as Record<string, unknown>);
+  const xsrfToken = xsrfFromCookies(cookieHeader);
 
-  logger.info({ status: getResp.status, hasCookie: cookieHeader.length > 0 }, "Form page fetched");
+  logger.info({ status: getResp.status, cookieHeader, xsrfToken: xsrfToken.slice(0, 20) + "…" }, "Form page fetched");
 
-  // Step 2: Parse form — CAPTCHA text, hidden fields, action URL
+  // Step 2: Parse form — CAPTCHA text + hidden CSRF token
   const $ = cheerio.load(getResp.data as string);
 
   const captchaText = extractCaptcha($);
@@ -113,12 +139,8 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     );
   }
 
-  const hiddenFields: Record<string, string> = {};
-  $("input[type='hidden']").each((_, el) => {
-    const name = $(el).attr("name");
-    const value = $(el).attr("value") ?? "";
-    if (name) hiddenFields[name] = value;
-  });
+  // The Laravel _token hidden input
+  const csrfToken = $("input[name='_token']").attr("value") ?? "";
 
   const rawAction = $("form").attr("action") ?? FORM_URL;
   const postUrl = rawAction.startsWith("http")
@@ -129,21 +151,27 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   const captchaAnswer = solveCaptcha(captchaText);
   logger.info({ captchaText, captchaAnswer }, "CAPTCHA solved");
 
-  // Step 4: POST the form
+  // Step 4: POST with correct field names (matches the actual NU form)
   const formParams = new URLSearchParams();
-  for (const [k, v] of Object.entries(hiddenFields)) formParams.append(k, v);
-  formParams.append("exam_name", params.examName);
-  formParams.append("exam_year", params.examYear);
-  formParams.append("roll_number", params.roll);
-  formParams.append("reg_number", params.registrationNo);
+  formParams.append("_token", csrfToken);
+  formParams.append("examination_name", examCode);
+  formParams.append("year", params.examYear);
+  formParams.append("examination_roll", params.roll);
+  formParams.append("registration_no", params.registrationNo);
   formParams.append("captcha", String(captchaAnswer));
+
+  logger.info({ postUrl, fields: Object.fromEntries(formParams) }, "Submitting result form");
 
   const postResp = await axios.post(postUrl, formParams.toString(), {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; NU-result-lookup/1.0)",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
       "Content-Type": "application/x-www-form-urlencoded",
       "Referer": FORM_URL,
       "Cookie": cookieHeader,
+      "X-XSRF-TOKEN": xsrfToken,
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Origin": BASE_URL,
     },
     maxRedirects: 5,
     timeout: 20_000,
@@ -154,22 +182,29 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   // Step 5: Parse the result HTML
   const $r = cheerio.load(postResp.data as string);
 
+  // Detect error / no-result
   const pageText = $r("body").text();
-  if (/no result|not found|invalid roll|invalid registration|error/i.test(pageText)) {
+  if (/no result|result not found|not available|invalid roll|invalid registration/i.test(pageText)) {
     throw new Error("No result found for the given roll and registration number.");
   }
+  // 422 can sometimes come back as an HTML error page too
+  if ($r("title").text().toLowerCase().includes("error")) {
+    const errBody = String(postResp.data).slice(0, 300);
+    throw new Error(`NU portal returned an error page: ${errBody}`);
+  }
 
-  // Student name — often in an h2/h3 or strong near the top of results
+  // Student name
   let studentName: string | null = null;
-  ["h2", "h3", "strong", ".student-name", "#student-name"].forEach((sel) => {
-    if (studentName) return;
+  const nameCandidates = ["h2", "h3", ".student-name", "#student-name", "strong"];
+  for (const sel of nameCandidates) {
     const txt = $r(sel).first().text().trim();
     if (txt && txt.length > 2 && txt.length < 100 && !/^\d/.test(txt)) {
       studentName = txt;
+      break;
     }
-  });
+  }
 
-  // CGPA
+  // CGPA — scan every element for "CGPA: X.XX"
   let cgpa: number | null = null;
   $r("*").each((_, el) => {
     if (cgpa !== null) return;
@@ -178,7 +213,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     if (m) cgpa = parseFloat(m[1]);
   });
 
-  // Course rows from a results table
+  // Course rows — NU result tables typically have: code | subject | letter grade | grade point
   const courses: CourseResult[] = [];
   $r("table tr").each((i, row) => {
     if (i === 0) return; // skip header

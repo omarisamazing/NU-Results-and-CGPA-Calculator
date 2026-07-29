@@ -4,25 +4,9 @@ import {
   LookupResultResponse,
   ListExamNamesResponse,
 } from "@workspace/api-zod";
-import { lookupNuResult } from "../lib/nu-scraper";
+import { lookupNuResult, EXAM_NAMES } from "../lib/nu-scraper";
 
 const router: IRouter = Router();
-
-/** Static list of NU examination names. */
-const EXAM_NAMES = [
-  "Bachelor Degree Honours 1st Year",
-  "Bachelor Degree Honours 2nd Year",
-  "Bachelor Degree Honours 3rd Year",
-  "Bachelor Degree Honours 4th Year",
-  "Master of Arts (MA) Preliminary",
-  "Master of Arts (MA) Final",
-  "Master of Science (MS) Preliminary",
-  "Master of Science (MS) Final",
-  "Master of Social Science (MSS) Preliminary",
-  "Master of Social Science (MSS) Final",
-  "Master of Commerce (MCom) Preliminary",
-  "Master of Commerce (MCom) Final",
-];
 
 router.get("/results/exam-names", async (_req, res): Promise<void> => {
   res.json(ListExamNamesResponse.parse(EXAM_NAMES));
