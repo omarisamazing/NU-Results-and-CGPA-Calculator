@@ -1,0 +1,14 @@
+{
+  "name": "nu-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NU honours result scraper prototype",
+  "main": "scraper.js",
+  "scripts": {
+    "start": "node scraper.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0"
+  }
+}
