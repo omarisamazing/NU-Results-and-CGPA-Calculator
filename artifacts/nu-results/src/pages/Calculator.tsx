@@ -202,8 +202,18 @@ export default function Calculator() {
                   </SelectTrigger>
                   <SelectContent>
                     {departments.map((d) => (
-                      <SelectItem key={d.id} value={d.id} className="font-mono">
+                      <SelectItem
+                        key={d.id}
+                        value={d.id}
+                        className="font-mono"
+                        disabled={!d.available}
+                      >
                         {d.name}
+                        {!d.available && (
+                          <span className="ml-2 text-[10px] text-muted-foreground/60 uppercase tracking-wider">
+                            Coming soon
+                          </span>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
