@@ -80,19 +80,33 @@ export default function Home() {
   // Credit comes from the static lookup map — NU's result HTML doesn't expose it reliably.
   const { displayCGPA, hasFailedSubjects, failedCourses } = useMemo(() => {
     if (!result) return { displayCGPA: null, hasFailedSubjects: false, failedCourses: [] as FailedCourse[] }
-    const courses = result.courses.map((c: CourseResult) => ({
-      credit: c.credit ?? creditLookup.get(c.code) ?? 0,
-      gradePoint: c.gradePoint ?? null,
-    }))
-    const { cgpa: computed, hasFailedSubjects } = computeCGPA(courses)
-    const displayCGPA = result.cgpa ?? result.computedCGPA ?? computed
+
+    // Detect failure directly from the grade string — do NOT rely solely on
+    // gradePoint===0, because if NU's exact grade string isn't in our lookup
+    // table the server returns gradePoint:null and the check silently misses.
+    const isFailGrade = (c: CourseResult) =>
+      c.gradePoint === 0 ||
+      c.grade === 'F' ||
+      /^fail/i.test(c.grade ?? '')
+
+    const hasFailedSubjects = result.courses.some(isFailGrade)
+
     const failedCourses: FailedCourse[] = result.courses
-      .filter((c: CourseResult) => c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail')
+      .filter(isFailGrade)
       .map((c: CourseResult) => ({
         code: c.code,
         name: c.subject,
         credit: c.credit ?? creditLookup.get(c.code) ?? 0,
       }))
+
+    // Compute CGPA client-side (used as fallback when server didn't provide one)
+    const courses = result.courses.map((c: CourseResult) => ({
+      credit: c.credit ?? creditLookup.get(c.code) ?? 0,
+      gradePoint: c.gradePoint ?? null,
+    }))
+    const { cgpa: computed } = computeCGPA(courses)
+    const displayCGPA = result.cgpa ?? result.computedCGPA ?? computed
+
     return { displayCGPA, hasFailedSubjects, failedCourses }
   }, [result, creditLookup])
 
@@ -102,7 +116,7 @@ export default function Home() {
     (hypotheticalGrades: Record<string, string>): number | null => {
       if (!result) return null
       const courses = result.courses.map((c: CourseResult) => {
-        const isFailed = c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail'
+        const isFailed = c.gradePoint === 0 || c.grade === 'F' || /^fail/i.test(c.grade ?? '')
         const gp = isFailed
           ? (gradeToPoint(hypotheticalGrades[c.code]) ?? null)
           : (c.gradePoint ?? null)
