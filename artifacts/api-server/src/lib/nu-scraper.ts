@@ -90,7 +90,8 @@ const GRADE_POINTS: Record<string, number> = {
   "C+": 2.50,
   "C":  2.25,
   "D":  2.00,
-  "F":  0.00,
+  "F":    0.00,
+  "Fail": 0.00, // NU portal returns "Fail" as the grade string, not "F"
 };
 
 export interface CourseResult {
