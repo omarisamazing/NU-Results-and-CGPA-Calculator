@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearch } from 'wouter'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw } from 'lucide-react'
@@ -17,6 +17,7 @@ import {
   computeYearGPA,
   computeCGPA,
 } from '@/lib/gpa'
+import { CGPABlock, type FailedCourse } from '@/components/CGPABlock'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -110,6 +111,35 @@ export default function Calculator() {
 
   const totalGraded = Object.keys(selected).length
   const totalCourses = deptData?.years.reduce((sum, y) => sum + y.courses.length, 0) ?? 0
+
+  // Build the list of failed courses for CGPABlock (courses where user selected 'F')
+  const failedCourses = useMemo<FailedCourse[]>(() => {
+    if (!deptData || !hasFailedSubjects) return []
+    return deptData.years.flatMap((y) =>
+      y.courses
+        .filter((c) => selected[c.code] === 'F')
+        .map((c) => ({ code: c.code, name: c.name, credit: c.credit })),
+    )
+  }, [deptData, hasFailedSubjects, selected])
+
+  // Compute estimated CGPA by substituting hypothetical grades for F courses
+  const computeCalcEstimate = useCallback(
+    (hypotheticalGrades: Record<string, string>): number | null => {
+      if (!deptData) return null
+      const courses = deptData.years.flatMap((y) =>
+        y.courses.map((c) => {
+          const isFailed = selected[c.code] === 'F'
+          const gp = isFailed
+            ? (gradeToPoint(hypotheticalGrades[c.code]) ?? null)
+            : (gradePoints[c.code] ?? null)
+          return { credit: c.credit, gradePoint: gp }
+        }),
+      )
+      const { cgpa } = computeCGPA(courses)
+      return cgpa
+    },
+    [deptData, selected, gradePoints],
+  )
 
   // ── Grade selection logic ──────────────────────────────────────────────────
   function selectGrade(course: CourseDefinition, grade: string) {
@@ -261,20 +291,19 @@ export default function Calculator() {
               animate={{ opacity: 1, y: 0 }}
               className="mt-auto pt-12"
             >
-              <div className="border-t border-border/40 pt-8">
-                <div className="flex items-end justify-between mb-6">
-                  <div>
-                    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block mb-2">
-                      Calculated CGPA
-                    </span>
-                    <span className="text-6xl md:text-7xl font-semibold tracking-tighter tabular-nums">
-                      {formatGPA(cgpa)}
-                    </span>
-                  </div>
+              <div className="border-t border-border/40 pt-8 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <CGPABlock
+                    cgpa={cgpa}
+                    hasFailedSubjects={hasFailedSubjects}
+                    failedCourses={failedCourses}
+                    computeEstimate={computeCalcEstimate}
+                    label="Calculated CGPA"
+                  />
                   {totalGraded > 0 && (
                     <button
                       onClick={handleReset}
-                      className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors pb-1"
+                      className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors pt-1 shrink-0"
                     >
                       <RotateCcw className="w-3 h-3" />
                       Reset

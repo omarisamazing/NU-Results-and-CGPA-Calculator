@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -10,6 +10,8 @@ import { useListExamNames, useLookupResult } from "@workspace/api-client-react"
 import type { ResultData, CourseResult } from "@workspace/api-client-react"
 
 import { computeCGPA, gradeToPoint } from "@/lib/gpa"
+import { buildCreditMap } from "@/lib/courseCredits"
+import { CGPABlock, type FailedCourse } from "@/components/CGPABlock"
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -18,9 +20,6 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-
-// Grade options for retake estimate (A+ through D, no F)
-const HYPOTHETICAL_GRADE_OPTIONS = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'D']
 
 const formSchema = z.object({
   examName: z.string().min(1, "Please select an examination"),
@@ -40,7 +39,14 @@ export default function Home() {
 
   const [result, setResult] = useState<ResultData | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [hypotheticalGrades, setHypotheticalGrades] = useState<Record<string, string>>({})
+  const [creditLookup, setCreditLookup] = useState<Map<string, number>>(new Map())
+
+  // Pre-load credit values from static department JSON files on mount.
+  // NU's result HTML does not reliably expose credit hours, so we look them
+  // up by course code from the same data the Calculator already uses.
+  useEffect(() => {
+    buildCreditMap().then(setCreditLookup)
+  }, [])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,7 +61,6 @@ export default function Home() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     setErrorMsg(null)
     setResult(null)
-    setHypotheticalGrades({})
 
     lookupMutation.mutate(
       { data: values },
@@ -71,36 +76,43 @@ export default function Home() {
     )
   }
 
-  // Compute CGPA client-side from courses (using shared engine) when not provided by server
+  // Compute CGPA client-side from courses (using shared engine) when not provided by server.
+  // Credit comes from the static lookup map — NU's result HTML doesn't expose it reliably.
   const { displayCGPA, hasFailedSubjects, failedCourses } = useMemo(() => {
-    if (!result) return { displayCGPA: null, hasFailedSubjects: false, failedCourses: [] }
+    if (!result) return { displayCGPA: null, hasFailedSubjects: false, failedCourses: [] as FailedCourse[] }
     const courses = result.courses.map((c: CourseResult) => ({
-      credit: c.credit ?? 0,
+      credit: c.credit ?? creditLookup.get(c.code) ?? 0,
       gradePoint: c.gradePoint ?? null,
     }))
     const { cgpa: computed, hasFailedSubjects } = computeCGPA(courses)
     const displayCGPA = result.cgpa ?? result.computedCGPA ?? computed
-    const failedCourses = result.courses.filter(
-      (c: CourseResult) => c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail'
-    )
+    const failedCourses: FailedCourse[] = result.courses
+      .filter((c: CourseResult) => c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail')
+      .map((c: CourseResult) => ({
+        code: c.code,
+        name: c.subject,
+        credit: c.credit ?? creditLookup.get(c.code) ?? 0,
+      }))
     return { displayCGPA, hasFailedSubjects, failedCourses }
-  }, [result])
+  }, [result, creditLookup])
 
-  // Estimated CGPA when all failed courses have a hypothetical grade selected
-  const estimatedCGPA = useMemo(() => {
-    if (!result || !hasFailedSubjects || failedCourses.length === 0) return null
-    const allCovered = failedCourses.every((c: CourseResult) => hypotheticalGrades[c.code])
-    if (!allCovered) return null
-    const courses = result.courses.map((c: CourseResult) => {
-      const isFailed = c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail'
-      const gp = isFailed
-        ? (gradeToPoint(hypotheticalGrades[c.code]) ?? null)
-        : (c.gradePoint ?? null)
-      return { credit: c.credit ?? 0, gradePoint: gp }
-    })
-    const { cgpa } = computeCGPA(courses)
-    return cgpa
-  }, [result, hasFailedSubjects, failedCourses, hypotheticalGrades])
+  // Compute estimated CGPA by substituting hypothetical grades for failed courses.
+  // Passed as a stable callback into CGPABlock so it can live-update as the user picks.
+  const computeEstimate = useCallback(
+    (hypotheticalGrades: Record<string, string>): number | null => {
+      if (!result) return null
+      const courses = result.courses.map((c: CourseResult) => {
+        const isFailed = c.gradePoint === 0 || c.grade === 'F' || c.grade?.toLowerCase() === 'fail'
+        const gp = isFailed
+          ? (gradeToPoint(hypotheticalGrades[c.code]) ?? null)
+          : (c.gradePoint ?? null)
+        return { credit: c.credit ?? creditLookup.get(c.code) ?? 0, gradePoint: gp }
+      })
+      const { cgpa } = computeCGPA(courses)
+      return cgpa
+    },
+    [result, creditLookup],
+  )
 
   return (
     <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto items-stretch">
@@ -331,16 +343,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {displayCGPA != null && !hasFailedSubjects && (
-                  <div className="text-right shrink-0">
-                    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block mb-2">
-                      {result.cgpa != null ? "Final CGPA" : "Computed CGPA"}
-                    </span>
-                    <span className="text-6xl md:text-7xl font-semibold tracking-tighter tabular-nums">
-                      {displayCGPA.toFixed(2)}
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -370,7 +372,10 @@ export default function Home() {
                       </TableCell>
                       <TableCell className="font-sans font-medium text-sm">{course.subject}</TableCell>
                       <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        {course.credit != null ? course.credit : "—"}
+                        {(() => {
+                          const cr = course.credit ?? creditLookup.get(course.code) ?? null
+                          return cr != null ? cr : "—"
+                        })()}
                       </TableCell>
                       <TableCell className={cn(
                         "text-right font-mono text-sm font-semibold",
@@ -389,62 +394,14 @@ export default function Home() {
               </Table>
             </div>
 
-            {/* Fail-gate CGPA estimate block */}
-            {hasFailedSubjects && (
-              <div className="border border-red-200 dark:border-red-900/50 p-6 space-y-6">
-                <div>
-                  <h3 className="font-mono text-xs uppercase tracking-widest text-red-600 dark:text-red-500 mb-1">
-                    Failed Subject(s) Detected
-                  </h3>
-                  <p className="font-sans text-sm text-muted-foreground leading-relaxed">
-                    You have failed subject(s) — estimate your CGPA below by selecting the grade you expect on retake.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  {failedCourses.map((course: CourseResult) => (
-                    <div key={course.code} className="flex items-center justify-between gap-4">
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm truncate">{course.subject}</p>
-                        <p className="font-mono text-xs text-muted-foreground">{course.code}</p>
-                      </div>
-                      <Select
-                        value={hypotheticalGrades[course.code] ?? ""}
-                        onValueChange={(v) =>
-                          setHypotheticalGrades((prev) => ({ ...prev, [course.code]: v }))
-                        }
-                      >
-                        <SelectTrigger className="w-[120px] rounded-none border-b-2 border-t-0 border-l-0 border-r-0 border-border focus:border-foreground focus:ring-0 px-0 h-9 bg-transparent font-mono text-sm shrink-0">
-                          <SelectValue placeholder="Select grade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {HYPOTHETICAL_GRADE_OPTIONS.map((g) => (
-                            <SelectItem key={g} value={g} className="font-mono">
-                              {g}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  ))}
-                </div>
-
-                {estimatedCGPA !== null && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="pt-4 border-t border-border/30"
-                  >
-                    <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block mb-2">
-                      Estimated CGPA (if retake passes as selected)
-                    </span>
-                    <span className="text-5xl font-semibold tracking-tighter tabular-nums">
-                      {estimatedCGPA.toFixed(2)}
-                    </span>
-                  </motion.div>
-                )}
-              </div>
-            )}
+            {/* CGPA display — Case A: shows real CGPA; Case B: fail-gate with estimate */}
+            <CGPABlock
+              cgpa={displayCGPA}
+              hasFailedSubjects={hasFailedSubjects}
+              failedCourses={failedCourses}
+              computeEstimate={computeEstimate}
+              label={result.cgpa != null ? "Final CGPA" : "Computed CGPA"}
+            />
 
             <div className="flex justify-center pb-12">
               <Button
