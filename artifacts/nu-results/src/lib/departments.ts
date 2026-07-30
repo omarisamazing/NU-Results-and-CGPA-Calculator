@@ -130,8 +130,8 @@ const REGISTRY: Record<string, DeptOption[]> = {
   ].map(d => ({ ...d, available: DEGREE_AVAILABLE.has(d.id) })),
 
   'masters-final': [
-    { id: 'economics', name: 'Economics', available: true },
-    { id: 'english',   name: 'English',   available: true },
+    { id: 'economics', name: 'Economics', available: false },
+    { id: 'english',   name: 'English',   available: false },
   ],
 }
 
