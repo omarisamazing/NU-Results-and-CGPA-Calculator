@@ -36,6 +36,9 @@ router.post("/results/lookup", async (req, res): Promise<void> => {
       roll,
       registrationNo,
       studentName: scraped.studentName,
+      fathersName: scraped.fathersName,
+      college: scraped.college,
+      resultStatus: scraped.resultStatus,
       cgpa: scraped.cgpa,
       courses: scraped.courses,
     });

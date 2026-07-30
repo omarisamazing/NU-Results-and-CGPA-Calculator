@@ -6,8 +6,7 @@ import { motion } from "framer-motion"
 import { ChevronRight, Loader2 } from "lucide-react"
 
 import { useListExamNames, useLookupResult, getListExamNamesQueryKey } from "@workspace/api-client-react"
-import { ResultData, ResultQuery, ApiError } from "@workspace/api-client-react/src/generated/api.schemas"
-import { ErrorType } from "@workspace/api-client-react/src/custom-fetch"
+import type { ResultData, CourseResult } from "@workspace/api-client-react"
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -51,7 +50,7 @@ export default function Home() {
           setResult(data)
         },
         onError: (err) => {
-          setErrorMsg(err.error?.error || "Failed to lookup result")
+          setErrorMsg((err.data as { error?: string } | null)?.error || err.message || "Failed to lookup result")
         }
       }
     )
@@ -199,16 +198,29 @@ export default function Home() {
             {/* Header info */}
             <div>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-border/50 pb-8">
-                <div>
+                <div className="flex-1 min-w-0">
                   <h2 className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">
                     {result.examName} • {result.examYear}
                   </h2>
-                  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
+                  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground break-words">
                     {result.studentName || "Unknown Candidate"}
                   </h1>
-                  <div className="mt-4 flex gap-6 font-mono text-sm text-muted-foreground">
+                  {result.fathersName && (
+                    <p className="mt-2 text-sm text-muted-foreground font-sans">
+                      Father: <span className="text-foreground">{result.fathersName}</span>
+                    </p>
+                  )}
+                  {result.college && (
+                    <p className="mt-1 text-sm text-muted-foreground font-sans">
+                      College: <span className="text-foreground">{result.college}</span>
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-6 font-mono text-sm text-muted-foreground">
                     <div><span className="uppercase text-[10px] tracking-wider block mb-1">Roll No</span><span className="text-foreground">{result.roll}</span></div>
                     <div><span className="uppercase text-[10px] tracking-wider block mb-1">Reg No</span><span className="text-foreground">{result.registrationNo}</span></div>
+                    {result.resultStatus && (
+                      <div><span className="uppercase text-[10px] tracking-wider block mb-1">Status</span><span className="text-foreground font-semibold">{result.resultStatus}</span></div>
+                    )}
                   </div>
                 </div>
 
@@ -233,7 +245,7 @@ export default function Home() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {result.courses.map((course, i) => (
+                  {result.courses.map((course: CourseResult, i: number) => (
                     <motion.tr 
                       key={course.code + i}
                       initial={{ opacity: 0, y: 10 }}

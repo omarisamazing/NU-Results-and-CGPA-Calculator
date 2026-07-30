@@ -35,6 +35,9 @@ export interface CourseResult {
 
 export interface ScrapedResult {
   studentName: string | null;
+  fathersName: string | null;
+  college: string | null;
+  resultStatus: string | null; // e.g. "Promoted", "Failed"
   cgpa: number | null;
   courses: CourseResult[];
 }
@@ -193,18 +196,35 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     throw new Error(`NU portal returned an error page: ${errBody}`);
   }
 
-  // Student name
-  let studentName: string | null = null;
-  const nameCandidates = ["h2", "h3", ".student-name", "#student-name", "strong"];
-  for (const sel of nameCandidates) {
-    const txt = $r(sel).first().text().trim();
-    if (txt && txt.length > 2 && txt.length < 100 && !/^\d/.test(txt)) {
-      studentName = txt;
-      break;
-    }
-  }
+  // ── Student info ────────────────────────────────────────────────────────────
+  // The result page uses a label/value pattern:
+  //   <span class="text-muted small d-block">Name of Student</span>
+  //   <span class="fw-bold fs-6">MD. OMAR ALI</span>
+  // We walk every labelled info-card and pick out the fields we need.
 
-  // CGPA — scan every element for "CGPA: X.XX"
+  let studentName: string | null = null;
+  let fathersName: string | null = null;
+  let college: string | null = null;
+
+  $r(".card-body .p-3").each((_, box) => {
+    const label = $r(box).find("span.text-muted").first().text().trim().toLowerCase();
+    const value = $r(box).find("span.fw-bold, span.fw-semibold").first().text().trim();
+    if (!value) return;
+    if (label.includes("name of student")) studentName = value;
+    else if (label.includes("father")) fathersName = value;
+    else if (label.includes("college")) college = value.replace(/^\(\d+\)\s*/, "").trim();
+  });
+
+  // ── Result status (Promoted / Failed / etc.) ─────────────────────────────
+  let resultStatus: string | null = null;
+  $r(".fw-bold").each((_, el) => {
+    const t = $r(el).text().trim();
+    if (/^(promoted|failed|pass|withheld|incomplete|distinction|merit)$/i.test(t)) {
+      resultStatus = t;
+    }
+  });
+
+  // ── CGPA — present in consolidated results, not individual year results ───
   let cgpa: number | null = null;
   $r("*").each((_, el) => {
     if (cgpa !== null) return;
@@ -213,22 +233,22 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     if (m) cgpa = parseFloat(m[1]);
   });
 
-  // Course rows — NU result tables typically have: code | subject | letter grade | grade point
+  // ── Course rows ───────────────────────────────────────────────────────────
+  // NU result table columns: Course Code | Title of Course | Credit | Letter Grade
+  // Column indices:                 0             1              2          3
   const courses: CourseResult[] = [];
   $r("table tr").each((i, row) => {
-    if (i === 0) return; // skip header
     const cells = $r(row).find("td");
-    if (cells.length >= 3) {
-      const code = $r(cells[0]).text().trim();
-      const subject = $r(cells[1]).text().trim();
-      const grade = $r(cells[2]).text().trim();
-      const gpText = cells.length >= 4 ? $r(cells[3]).text().trim() : "";
-      const gradePoint = gpText && !isNaN(parseFloat(gpText)) ? parseFloat(gpText) : null;
-      if (code && subject) {
-        courses.push({ code, subject, grade, gradePoint });
-      }
+    if (cells.length < 4) return; // skip header (th) rows and short rows
+    const code = $r(cells[0]).text().trim();
+    const subject = $r(cells[1]).text().trim();
+    const grade = $r(cells[3]).text().trim(); // Letter Grade is column 3
+    const creditText = $r(cells[2]).text().trim();
+    const gradePoint = creditText && !isNaN(parseFloat(creditText)) ? parseFloat(creditText) : null;
+    if (code && subject && /^\d/.test(code)) { // course codes start with digits
+      courses.push({ code, subject, grade, gradePoint });
     }
   });
 
-  return { studentName, cgpa, courses };
+  return { studentName, fathersName, college, resultStatus, cgpa, courses };
 }

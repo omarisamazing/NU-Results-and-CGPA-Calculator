@@ -147,6 +147,13 @@ components:
           type: string
         studentName:
           type: ["string", "null"]
+        fathersName:
+          type: ["string", "null"]
+        college:
+          type: ["string", "null"]
+        resultStatus:
+          type: ["string", "null"]
+          description: e.g. "Promoted", "Failed"
         cgpa:
           type: ["number", "null"]
         courses:

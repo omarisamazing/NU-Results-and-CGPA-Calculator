@@ -34,6 +34,9 @@ export const LookupResultResponse = zod.object({
   "roll": zod.string(),
   "registrationNo": zod.string(),
   "studentName": zod.string().nullish(),
+  "fathersName": zod.string().nullish(),
+  "college": zod.string().nullish(),
+  "resultStatus": zod.string().nullish(),
   "cgpa": zod.number().nullish(),
   "courses": zod.array(zod.object({
   "code": zod.string(),
