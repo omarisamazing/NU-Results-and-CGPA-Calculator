@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "Mathematics",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "6101", "name": "Algebra-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6102", "name": "Algebra-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6103", "name": "Calculus-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6104", "name": "Calculus-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6105", "name": "Geometry-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6106", "name": "Geometry-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "6201", "name": "Real Analysis-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6202", "name": "Real Analysis-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6203", "name": "Ordinary Differential Equations", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6204", "name": "Partial Differential Equations", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6205", "name": "Abstract Algebra-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6206", "name": "Abstract Algebra-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "6301", "name": "Complex Analysis-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6302", "name": "Complex Analysis-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6303", "name": "Numerical Methods-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6304", "name": "Numerical Methods-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6305", "name": "Topology-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6306", "name": "Linear Algebra", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6307", "name": "Mathematical Statistics", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "6401", "name": "Functional Analysis-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6402", "name": "Functional Analysis-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6403", "name": "Mathematical Methods-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6404", "name": "Mathematical Methods-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "6405", "name": "Operations Research (Elective)", "credit": 4, "isElective": true, "pairedWith": "6406" },
+        { "code": "6406", "name": "Fluid Mechanics (Elective)", "credit": 4, "isElective": true, "pairedWith": "6405" },
+        { "code": "6407", "name": "Tensor Analysis & Relativity", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

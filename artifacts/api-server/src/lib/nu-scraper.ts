@@ -22,13 +22,33 @@ export const EXAM_NAME_CODES: Record<string, string> = {
   "Bachelor Degree Honours 3rd Year": "2203",
   "Bachelor Degree Honours 4th Year": "2204",
   "Bachelor Degree Honours Consolidated Result": "2205",
+  "Degree Pass 1st Year": "2301",
+  "Degree Pass 2nd Year": "2302",
+  "Degree Pass 3rd Year": "2303",
+  "Masters Preliminary": "2401",
+  "Masters Final": "2402",
 };
 
 export const EXAM_NAMES = Object.keys(EXAM_NAME_CODES);
 
+/** Standard NU grading scale — kept here so the scraper can resolve grade points */
+const GRADE_POINTS: Record<string, number> = {
+  "A+": 4.00,
+  "A":  3.75,
+  "A-": 3.50,
+  "B+": 3.25,
+  "B":  3.00,
+  "B-": 2.75,
+  "C+": 2.50,
+  "C":  2.25,
+  "D":  2.00,
+  "F":  0.00,
+};
+
 export interface CourseResult {
   code: string;
   subject: string;
+  credit: number | null;
   grade: string;
   gradePoint: number | null;
 }
@@ -38,7 +58,8 @@ export interface ScrapedResult {
   fathersName: string | null;
   college: string | null;
   resultStatus: string | null; // e.g. "Promoted", "Failed"
-  cgpa: number | null;
+  cgpa: number | null;         // server-provided (consolidated results only)
+  computedCGPA: number | null; // calculated from courses
   courses: CourseResult[];
 }
 
@@ -103,6 +124,20 @@ function xsrfFromCookies(cookieHeader: string): string {
   return m ? decodeURIComponent(m[1]) : "";
 }
 
+/** Compute overall CGPA from a list of courses (credit-weighted). */
+function computeCGPA(courses: CourseResult[]): number | null {
+  const graded = courses.filter(
+    (c) => c.gradePoint !== null && c.credit !== null,
+  );
+  if (graded.length === 0) return null;
+  const totalWeighted = graded.reduce(
+    (sum, c) => sum + c.gradePoint! * c.credit!,
+    0,
+  );
+  const totalCredits = graded.reduce((sum, c) => sum + c.credit!, 0);
+  return totalCredits > 0 ? totalWeighted / totalCredits : null;
+}
+
 /**
  * Look up an NU exam result.
  * One request per call — never loop over this function.
@@ -129,7 +164,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   const cookieHeader = cookiesFromHeaders(getResp.headers as Record<string, unknown>);
   const xsrfToken = xsrfFromCookies(cookieHeader);
 
-  logger.info({ status: getResp.status, cookieHeader, xsrfToken: xsrfToken.slice(0, 20) + "…" }, "Form page fetched");
+  logger.info({ status: getResp.status, xsrfPreview: xsrfToken.slice(0, 20) + "…" }, "Form page fetched");
 
   // Step 2: Parse form — CAPTCHA text + hidden CSRF token
   const $ = cheerio.load(getResp.data as string);
@@ -138,7 +173,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   if (!captchaText) {
     throw new Error(
       "Could not find CAPTCHA arithmetic expression in the NU results page. " +
-      "The site structure may have changed."
+      "The site structure may have changed.",
     );
   }
 
@@ -163,7 +198,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   formParams.append("registration_no", params.registrationNo);
   formParams.append("captcha", String(captchaAnswer));
 
-  logger.info({ postUrl, fields: Object.fromEntries(formParams) }, "Submitting result form");
+  logger.info({ postUrl }, "Submitting result form");
 
   const postResp = await axios.post(postUrl, formParams.toString(), {
     headers: {
@@ -190,18 +225,12 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   if (/no result|result not found|not available|invalid roll|invalid registration/i.test(pageText)) {
     throw new Error("No result found for the given roll and registration number.");
   }
-  // 422 can sometimes come back as an HTML error page too
   if ($r("title").text().toLowerCase().includes("error")) {
     const errBody = String(postResp.data).slice(0, 300);
     throw new Error(`NU portal returned an error page: ${errBody}`);
   }
 
   // ── Student info ────────────────────────────────────────────────────────────
-  // The result page uses a label/value pattern:
-  //   <span class="text-muted small d-block">Name of Student</span>
-  //   <span class="fw-bold fs-6">MD. OMAR ALI</span>
-  // We walk every labelled info-card and pick out the fields we need.
-
   let studentName: string | null = null;
   let fathersName: string | null = null;
   let college: string | null = null;
@@ -215,7 +244,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     else if (label.includes("college")) college = value.replace(/^\(\d+\)\s*/, "").trim();
   });
 
-  // ── Result status (Promoted / Failed / etc.) ─────────────────────────────
+  // ── Result status ────────────────────────────────────────────────────────────
   let resultStatus: string | null = null;
   $r(".fw-bold").each((_, el) => {
     const t = $r(el).text().trim();
@@ -224,7 +253,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     }
   });
 
-  // ── CGPA — present in consolidated results, not individual year results ───
+  // ── CGPA (consolidated results only) ─────────────────────────────────────────
   let cgpa: number | null = null;
   $r("*").each((_, el) => {
     if (cgpa !== null) return;
@@ -235,20 +264,24 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
 
   // ── Course rows ───────────────────────────────────────────────────────────
   // NU result table columns: Course Code | Title of Course | Credit | Letter Grade
-  // Column indices:                 0             1              2          3
   const courses: CourseResult[] = [];
-  $r("table tr").each((i, row) => {
+  $r("table tr").each((_, row) => {
     const cells = $r(row).find("td");
-    if (cells.length < 4) return; // skip header (th) rows and short rows
-    const code = $r(cells[0]).text().trim();
-    const subject = $r(cells[1]).text().trim();
-    const grade = $r(cells[3]).text().trim(); // Letter Grade is column 3
+    if (cells.length < 4) return; // skip header rows
+    const code       = $r(cells[0]).text().trim();
+    const subject    = $r(cells[1]).text().trim();
     const creditText = $r(cells[2]).text().trim();
-    const gradePoint = creditText && !isNaN(parseFloat(creditText)) ? parseFloat(creditText) : null;
-    if (code && subject && /^\d/.test(code)) { // course codes start with digits
-      courses.push({ code, subject, grade, gradePoint });
-    }
+    const grade      = $r(cells[3]).text().trim();
+
+    if (!code || !/^\d/.test(code)) return; // course codes start with digits
+
+    const credit     = creditText && !isNaN(parseFloat(creditText)) ? parseFloat(creditText) : null;
+    const gradePoint = grade in GRADE_POINTS ? GRADE_POINTS[grade] : null;
+
+    courses.push({ code, subject, credit, grade, gradePoint });
   });
 
-  return { studentName, fathersName, college, resultStatus, cgpa, courses };
+  const computedCGPA = computeCGPA(courses);
+
+  return { studentName, fathersName, college, resultStatus, cgpa, computedCGPA, courses };
 }

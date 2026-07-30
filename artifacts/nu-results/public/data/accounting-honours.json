@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "Accounting",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "4101", "name": "Principles of Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4102", "name": "Principles of Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4103", "name": "Business Mathematics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4104", "name": "Business Mathematics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4105", "name": "Commercial Law", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4106", "name": "Business Communication", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "4201", "name": "Intermediate Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4202", "name": "Intermediate Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4203", "name": "Cost Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4204", "name": "Cost Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4205", "name": "Business Statistics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4206", "name": "Business Statistics-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "4301", "name": "Advanced Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4302", "name": "Advanced Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4303", "name": "Management Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4304", "name": "Management Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4305", "name": "Taxation-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4306", "name": "Taxation-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4307", "name": "Auditing-I", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "4401", "name": "Financial Accounting", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4402", "name": "Auditing-II & Assurance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4403", "name": "Accounting Theory", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4404", "name": "Corporate Governance & Ethics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "4405", "name": "Forensic Accounting (Elective)", "credit": 4, "isElective": true, "pairedWith": "4406" },
+        { "code": "4406", "name": "International Accounting (Elective)", "credit": 4, "isElective": true, "pairedWith": "4405" },
+        { "code": "4407", "name": "Research Methodology", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

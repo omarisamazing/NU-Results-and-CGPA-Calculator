@@ -15,6 +15,20 @@ export interface ResultData {
   /** @nullable */
   studentName?: string | null;
   /** @nullable */
+  fathersName?: string | null;
+  /** @nullable */
+  college?: string | null;
+  /**
+     * e.g. "Promoted", "Failed"
+     * @nullable
+     */
+  resultStatus?: string | null;
+  /** @nullable */
   cgpa?: number | null;
+  /**
+     * CGPA calculated server-side from the fetched courses
+     * @nullable
+     */
+  computedCGPA?: number | null;
   courses: CourseResult[];
 }

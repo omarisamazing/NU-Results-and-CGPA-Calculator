@@ -1,0 +1,22 @@
+{
+  "program": "masters-final",
+  "department": "Economics",
+  "syllabus": "2021-2022",
+  "years": [
+    {
+      "year": 1,
+      "label": "Masters Final Year",
+      "courses": [
+        { "code": "3501", "name": "Advanced Microeconomics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3502", "name": "Advanced Microeconomics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3503", "name": "Advanced Macroeconomics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3504", "name": "Advanced Macroeconomics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3505", "name": "Econometrics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3506", "name": "Econometrics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3507", "name": "Development Finance (Elective)", "credit": 4, "isElective": true, "pairedWith": "3508" },
+        { "code": "3508", "name": "International Development (Elective)", "credit": 4, "isElective": true, "pairedWith": "3507" },
+        { "code": "3509", "name": "Thesis / Research Paper", "credit": 8, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

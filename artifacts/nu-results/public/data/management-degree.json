@@ -1,0 +1,43 @@
+{
+  "program": "degree",
+  "department": "Management",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "9401", "name": "Principles of Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9402", "name": "Principles of Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9403", "name": "Principles of Economics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9404", "name": "Business Communication", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9405", "name": "Business Mathematics & Statistics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9406", "name": "Commercial & Company Law", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "9501", "name": "Organizational Behaviour", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9502", "name": "Human Resource Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9503", "name": "Marketing Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9504", "name": "Financial Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9505", "name": "Production & Operations Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9506", "name": "Principles of Accounting", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "9601", "name": "Strategic Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9602", "name": "Entrepreneurship", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9603", "name": "Supply Chain Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9604", "name": "Research Methods in Business", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9605", "name": "International Business (Elective)", "credit": 4, "isElective": true, "pairedWith": "9606" },
+        { "code": "9606", "name": "E-Commerce & Digital Marketing (Elective)", "credit": 4, "isElective": true, "pairedWith": "9605" }
+      ]
+    }
+  ]
+}

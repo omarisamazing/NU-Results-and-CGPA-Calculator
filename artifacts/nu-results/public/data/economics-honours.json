@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "Economics",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "2101", "name": "Principles of Economics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2102", "name": "Principles of Economics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2103", "name": "History of Economic Thought-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2104", "name": "History of Economic Thought-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2105", "name": "Fundamentals of Political Science", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2106", "name": "Fundamentals of Sociology", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "2201", "name": "Microeconomics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2202", "name": "Microeconomics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2203", "name": "Macroeconomics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2204", "name": "Macroeconomics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2205", "name": "Statistics for Economists-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2206", "name": "Statistics for Economists-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "2301", "name": "Monetary Economics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2302", "name": "Monetary Economics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2303", "name": "Public Finance-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2304", "name": "Public Finance-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2305", "name": "International Economics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2306", "name": "International Economics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2307", "name": "Development Economics", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "2401", "name": "Advanced Macroeconomics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2402", "name": "Advanced Microeconomics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2403", "name": "Econometrics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2404", "name": "Bangladesh Economy", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "2405", "name": "Agricultural Economics (Elective)", "credit": 4, "isElective": true, "pairedWith": "2406" },
+        { "code": "2406", "name": "Industrial Economics (Elective)", "credit": 4, "isElective": true, "pairedWith": "2405" },
+        { "code": "2407", "name": "Environmental Economics OR Economic Planning (Elective)", "credit": 4, "isElective": true, "pairedWith": null }
+      ]
+    }
+  ]
+}

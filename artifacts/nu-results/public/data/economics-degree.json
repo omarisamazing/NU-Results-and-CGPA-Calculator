@@ -1,0 +1,43 @@
+{
+  "program": "degree",
+  "department": "Economics",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "1101", "name": "Principles of Economics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1102", "name": "Principles of Economics-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1103", "name": "Political Economy-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1104", "name": "Political Economy-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1105", "name": "Statistics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1106", "name": "Statistics-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "1201", "name": "Microeconomics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1202", "name": "Macroeconomics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1203", "name": "Money, Banking & Finance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1204", "name": "Development Economics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1205", "name": "Agricultural Economics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1206", "name": "History of Economic Thought", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "1301", "name": "Bangladesh Economy", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1302", "name": "International Trade & Finance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1303", "name": "Public Finance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1304", "name": "Industrial Economics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "1305", "name": "Environmental Economics (Elective)", "credit": 4, "isElective": true, "pairedWith": "1306" },
+        { "code": "1306", "name": "Labour Economics (Elective)", "credit": 4, "isElective": true, "pairedWith": "1305" }
+      ]
+    }
+  ]
+}

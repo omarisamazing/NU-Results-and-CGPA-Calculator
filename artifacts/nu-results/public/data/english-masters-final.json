@@ -1,0 +1,22 @@
+{
+  "program": "masters-final",
+  "department": "English",
+  "syllabus": "2021-2022",
+  "years": [
+    {
+      "year": 1,
+      "label": "Masters Final Year",
+      "courses": [
+        { "code": "3601", "name": "Advanced Literary Theory-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3602", "name": "Advanced Literary Theory-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3603", "name": "Post-Colonial Studies-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3604", "name": "Post-Colonial Studies-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3605", "name": "Applied Linguistics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3606", "name": "Language Teaching Methodology", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3607", "name": "World Literature (Elective)", "credit": 4, "isElective": true, "pairedWith": "3608" },
+        { "code": "3608", "name": "Gender & Literature (Elective)", "credit": 4, "isElective": true, "pairedWith": "3607" },
+        { "code": "3609", "name": "Thesis / Research Paper", "credit": 8, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

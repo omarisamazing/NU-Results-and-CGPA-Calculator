@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "History",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "7101", "name": "Ancient History of the World-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7102", "name": "Ancient History of the World-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7103", "name": "History of South Asia-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7104", "name": "History of South Asia-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7105", "name": "History of Bangladesh-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7106", "name": "History of Bangladesh-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "7201", "name": "Medieval History of the World-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7202", "name": "Medieval History of the World-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7203", "name": "History of Bengal-I (Medieval)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7204", "name": "History of Bengal-II (Colonial)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7205", "name": "History of Bangladesh-III", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7206", "name": "Islamic History & Culture", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "7301", "name": "Modern World History-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7302", "name": "Modern World History-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7303", "name": "History of Bangladesh-IV (Liberation War)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7304", "name": "Colonial History of South Asia", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7305", "name": "History of Modern Europe-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7306", "name": "History of Modern Europe-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7307", "name": "Social & Economic History of Bangladesh", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "7401", "name": "Historiography-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7402", "name": "Historiography-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7403", "name": "History of Bangladesh-V (Post-independence)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7404", "name": "Historical Methods & Research", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "7405", "name": "History of the Americas (Elective)", "credit": 4, "isElective": true, "pairedWith": "7406" },
+        { "code": "7406", "name": "History of South-East Asia (Elective)", "credit": 4, "isElective": true, "pairedWith": "7405" },
+        { "code": "7407", "name": "Contemporary World Affairs", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

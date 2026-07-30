@@ -23,8 +23,17 @@ export interface ResultQuery {
 export interface CourseResult {
   code: string;
   subject: string;
+  /**
+     * Course credit hours
+     * @nullable
+     */
+  credit?: number | null;
+  /** Letter grade (e.g. A+, B, F) */
   grade: string;
-  /** @nullable */
+  /**
+     * Numeric grade point on the 0.00–4.00 scale
+     * @nullable
+     */
   gradePoint?: number | null;
 }
 
@@ -39,10 +48,18 @@ export interface ResultData {
   fathersName?: string | null;
   /** @nullable */
   college?: string | null;
-  /** e.g. "Promoted", "Failed" @nullable */
+  /**
+     * e.g. "Promoted", "Failed"
+     * @nullable
+     */
   resultStatus?: string | null;
   /** @nullable */
   cgpa?: number | null;
+  /**
+     * CGPA calculated server-side from the fetched courses
+     * @nullable
+     */
+  computedCGPA?: number | null;
   courses: CourseResult[];
 }
 

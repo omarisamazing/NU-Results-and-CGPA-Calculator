@@ -1,0 +1,43 @@
+{
+  "program": "degree",
+  "department": "Accounting",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "9101", "name": "Principles of Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9102", "name": "Principles of Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9103", "name": "Business Mathematics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9104", "name": "Commercial Law & Practice", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9105", "name": "Business Statistics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9106", "name": "Business Communication", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "9201", "name": "Intermediate Accounting-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9202", "name": "Intermediate Accounting-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9203", "name": "Cost Accounting", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9204", "name": "Taxation", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9205", "name": "Auditing & Assurance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9206", "name": "Principles of Economics", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "9301", "name": "Advanced Accounting", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9302", "name": "Management Accounting", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9303", "name": "Financial Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9304", "name": "Corporate Governance", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "9305", "name": "Accounting Theory (Elective)", "credit": 4, "isElective": true, "pairedWith": "9306" },
+        { "code": "9306", "name": "International Accounting (Elective)", "credit": 4, "isElective": true, "pairedWith": "9305" }
+      ]
+    }
+  ]
+}

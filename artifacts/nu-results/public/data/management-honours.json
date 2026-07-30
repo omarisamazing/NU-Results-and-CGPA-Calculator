@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "Management",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "8101", "name": "Principles of Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8102", "name": "Principles of Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8103", "name": "Business Communication-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8104", "name": "Business Communication-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8105", "name": "Principles of Economics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8106", "name": "Principles of Economics-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "8201", "name": "Organizational Behaviour-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8202", "name": "Organizational Behaviour-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8203", "name": "Human Resource Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8204", "name": "Human Resource Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8205", "name": "Marketing Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8206", "name": "Marketing Management-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "8301", "name": "Financial Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8302", "name": "Financial Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8303", "name": "Operations Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8304", "name": "Operations Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8305", "name": "Strategic Management-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8306", "name": "Strategic Management-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8307", "name": "Business Research Methods", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "8401", "name": "Entrepreneurship & Small Business", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8402", "name": "Project Management", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8403", "name": "Quality & Operations Strategy", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8404", "name": "E-Commerce & Digital Business", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "8405", "name": "Supply Chain Management (Elective)", "credit": 4, "isElective": true, "pairedWith": "8406" },
+        { "code": "8406", "name": "International Business (Elective)", "credit": 4, "isElective": true, "pairedWith": "8405" },
+        { "code": "8407", "name": "Research Paper / Project", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

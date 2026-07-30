@@ -58,6 +58,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+        "429":
+          description: Rate limited — too many requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
         "502":
           description: Error communicating with NU portal
           content:
@@ -123,10 +129,15 @@ components:
           type: string
         subject:
           type: string
+        credit:
+          type: ["number", "null"]
+          description: Course credit hours
         grade:
           type: string
+          description: Letter grade (e.g. A+, B, F)
         gradePoint:
           type: ["number", "null"]
+          description: Numeric grade point on the 0.00–4.00 scale
 
     ResultData:
       type: object
@@ -156,6 +167,9 @@ components:
           description: e.g. "Promoted", "Failed"
         cgpa:
           type: ["number", "null"]
+        computedCGPA:
+          type: ["number", "null"]
+          description: CGPA calculated server-side from the fetched courses
         courses:
           type: array
           items:

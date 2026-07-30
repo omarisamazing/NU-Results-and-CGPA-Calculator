@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "Political Science",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "5101", "name": "Introduction to Political Science-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5102", "name": "Introduction to Political Science-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5103", "name": "History of Political Thought-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5104", "name": "History of Political Thought-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5105", "name": "Comparative Government-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5106", "name": "Comparative Government-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "5201", "name": "Political Theory-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5202", "name": "Political Theory-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5203", "name": "International Relations-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5204", "name": "International Relations-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5205", "name": "Government of Bangladesh-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5206", "name": "Government of Bangladesh-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "5301", "name": "Public Administration-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5302", "name": "Public Administration-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5303", "name": "Politics of Bangladesh-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5304", "name": "Politics of Bangladesh-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5305", "name": "South Asian Politics", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5306", "name": "Political Economy", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5307", "name": "Political Geography", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "5401", "name": "Contemporary Political Theory", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5402", "name": "Democratic Theory & Practice", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5403", "name": "Human Rights & International Law", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5404", "name": "Research Methods in Social Science", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "5405", "name": "Foreign Policy Analysis (Elective)", "credit": 4, "isElective": true, "pairedWith": "5406" },
+        { "code": "5406", "name": "Political Sociology (Elective)", "credit": 4, "isElective": true, "pairedWith": "5405" },
+        { "code": "5407", "name": "Federalism & Local Government", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

@@ -36,13 +36,15 @@ export const LookupResultResponse = zod.object({
   "studentName": zod.string().nullish(),
   "fathersName": zod.string().nullish(),
   "college": zod.string().nullish(),
-  "resultStatus": zod.string().nullish(),
+  "resultStatus": zod.string().nullish().describe('e.g. \"Promoted\", \"Failed\"'),
   "cgpa": zod.number().nullish(),
+  "computedCGPA": zod.number().nullish().describe('CGPA calculated server-side from the fetched courses'),
   "courses": zod.array(zod.object({
   "code": zod.string(),
   "subject": zod.string(),
-  "grade": zod.string(),
-  "gradePoint": zod.number().nullish()
+  "credit": zod.number().nullish().describe('Course credit hours'),
+  "grade": zod.string().describe('Letter grade (e.g. A+, B, F)'),
+  "gradePoint": zod.number().nullish().describe('Numeric grade point on the 0.00–4.00 scale')
 }))
 })
 

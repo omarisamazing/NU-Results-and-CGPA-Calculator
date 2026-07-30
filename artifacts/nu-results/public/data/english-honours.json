@@ -1,0 +1,57 @@
+{
+  "program": "honours",
+  "department": "English",
+  "syllabus": "2013-2014",
+  "years": [
+    {
+      "year": 1,
+      "label": "1st Year",
+      "courses": [
+        { "code": "3101", "name": "History of English Literature-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3102", "name": "History of English Literature-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3103", "name": "Applied Grammar & Composition-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3104", "name": "Applied Grammar & Composition-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3105", "name": "Introduction to Linguistics-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3106", "name": "Introduction to Linguistics-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 2,
+      "label": "2nd Year",
+      "courses": [
+        { "code": "3201", "name": "Poetry-I (Chaucer to Milton)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3202", "name": "Poetry-II (Romantic to Modern)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3203", "name": "Drama-I (Elizabethan & Jacobean)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3204", "name": "Drama-II (Restoration to Modern)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3205", "name": "Prose & Fiction-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3206", "name": "Prose & Fiction-II", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 3,
+      "label": "3rd Year",
+      "courses": [
+        { "code": "3301", "name": "The Novel-I (18th & 19th Century)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3302", "name": "The Novel-II (20th Century)", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3303", "name": "Shakespeare-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3304", "name": "Shakespeare-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3305", "name": "American Literature-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3306", "name": "American Literature-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3307", "name": "Short Story & Essay", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    },
+    {
+      "year": 4,
+      "label": "4th Year",
+      "courses": [
+        { "code": "3401", "name": "Modern Drama", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3402", "name": "Modern Poetry", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3403", "name": "Literary Criticism-I", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3404", "name": "Literary Criticism-II", "credit": 4, "isElective": false, "pairedWith": null },
+        { "code": "3405", "name": "Post-Colonial Literature (Elective)", "credit": 4, "isElective": true, "pairedWith": "3406" },
+        { "code": "3406", "name": "World Literature in English (Elective)", "credit": 4, "isElective": true, "pairedWith": "3405" },
+        { "code": "3407", "name": "Research Writing & Methodology", "credit": 4, "isElective": false, "pairedWith": null }
+      ]
+    }
+  ]
+}

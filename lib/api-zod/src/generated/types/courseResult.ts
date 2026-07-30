@@ -9,7 +9,16 @@
 export interface CourseResult {
   code: string;
   subject: string;
+  /**
+     * Course credit hours
+     * @nullable
+     */
+  credit?: number | null;
+  /** Letter grade (e.g. A+, B, F) */
   grade: string;
-  /** @nullable */
+  /**
+     * Numeric grade point on the 0.00–4.00 scale
+     * @nullable
+     */
   gradePoint?: number | null;
 }
