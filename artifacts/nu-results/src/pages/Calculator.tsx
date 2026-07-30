@@ -99,8 +99,8 @@ export default function Calculator() {
     return result
   }, [deptData, gradePoints])
 
-  const cgpa = useMemo<number | null>(() => {
-    if (!deptData) return null
+  const { cgpa, hasFailedSubjects } = useMemo(() => {
+    if (!deptData) return { cgpa: null, hasFailedSubjects: false }
     return computeCGPA(
       deptData.years.flatMap((y) =>
         y.courses.map((c) => ({ credit: c.credit, gradePoint: gradePoints[c.code] ?? null })),

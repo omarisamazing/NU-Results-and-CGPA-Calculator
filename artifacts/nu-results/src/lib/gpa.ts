@@ -47,15 +47,24 @@ export function computeYearGPA(courses: GradedCourse[]): number | null {
   return totalCredits > 0 ? totalWeighted / totalCredits : null
 }
 
+export interface CGPAResult {
+  cgpa: number | null
+  /** True when at least one course has grade F — CGPA is provisional until retaken */
+  hasFailedSubjects: boolean
+}
+
 /**
  * Overall CGPA = Σ(all courses' gradePoint × credit) / Σ(all courses' credit)
  * F grades (gradePoint = 0) DO count — per NU rules.
- * Returns null if no grades have been entered at all.
+ * Returns null cgpa if no grades have been entered at all.
+ * Returns hasFailedSubjects=true when any course has gradePoint === 0 (F).
  */
-export function computeCGPA(allCourses: GradedCourse[]): number | null {
+export function computeCGPA(allCourses: GradedCourse[]): CGPAResult {
   const graded = allCourses.filter(c => c.gradePoint !== null)
-  if (graded.length === 0) return null
+  const hasFailedSubjects = graded.some(c => c.gradePoint === 0)
+  if (graded.length === 0) return { cgpa: null, hasFailedSubjects: false }
   const totalWeighted = graded.reduce((sum, c) => sum + c.gradePoint! * c.credit, 0)
   const totalCredits   = graded.reduce((sum, c) => sum + c.credit, 0)
-  return totalCredits > 0 ? totalWeighted / totalCredits : null
+  const cgpa = totalCredits > 0 ? totalWeighted / totalCredits : null
+  return { cgpa, hasFailedSubjects }
 }

@@ -66,24 +66,22 @@ export default function Home() {
   }
 
   // Compute CGPA client-side from courses (using shared engine) when not provided by server
-  const displayCGPA = useMemo(() => {
-    if (!result) return null
-    if (result.cgpa != null) return result.cgpa
-    if (result.computedCGPA != null) return result.computedCGPA
-    // Fallback: calculate from courses using the shared engine
-    return computeCGPA(
-      result.courses.map((c: CourseResult) => ({
-        credit: c.credit ?? 0,
-        gradePoint: c.gradePoint ?? null,
-      })),
-    )
+  const { displayCGPA, hasFailedSubjects } = useMemo(() => {
+    if (!result) return { displayCGPA: null, hasFailedSubjects: false }
+    const courses = result.courses.map((c: CourseResult) => ({
+      credit: c.credit ?? 0,
+      gradePoint: c.gradePoint ?? null,
+    }))
+    const { cgpa: computed, hasFailedSubjects } = computeCGPA(courses)
+    const displayCGPA = result.cgpa ?? result.computedCGPA ?? computed
+    return { displayCGPA, hasFailedSubjects }
   }, [result])
 
   return (
     <div className="flex-1 flex flex-col md:flex-row w-full max-w-7xl mx-auto items-stretch">
 
       {/* ── Search Sidebar ── */}
-      <div className="w-full md:w-[400px] lg:w-[460px] p-6 md:p-12 md:border-r border-border/40 shrink-0">
+      <div className="no-print w-full md:w-[400px] lg:w-[460px] p-6 md:p-12 md:border-r border-border/40 shrink-0">
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter mb-2">Query.</h1>
           <p className="text-muted-foreground font-mono text-xs uppercase tracking-widest">
@@ -217,7 +215,7 @@ export default function Home() {
       </div>
 
       {/* ── Result Panel ── */}
-      <div className="flex-1 bg-muted/30 p-6 md:p-12 overflow-y-auto min-h-[50vh]">
+      <div className="flex-1 bg-muted/30 p-6 md:p-12 overflow-y-auto min-h-[50vh] print-area">
 
         {/* Loading skeleton */}
         {lookupMutation.isPending && (
@@ -311,11 +309,20 @@ export default function Home() {
                 {displayCGPA != null && (
                   <div className="text-right shrink-0">
                     <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground block mb-2">
-                      {result.cgpa != null ? "Final CGPA" : "Computed CGPA"}
+                      {result.cgpa != null
+                        ? "Final CGPA"
+                        : hasFailedSubjects
+                          ? "Provisional CGPA"
+                          : "Computed CGPA"}
                     </span>
                     <span className="text-6xl md:text-7xl font-semibold tracking-tighter tabular-nums">
                       {displayCGPA.toFixed(2)}
                     </span>
+                    {hasFailedSubjects && (
+                      <p className="font-mono text-[10px] text-muted-foreground mt-2 max-w-[200px] leading-relaxed">
+                        Excludes failed subjects — retake required to finalize
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
