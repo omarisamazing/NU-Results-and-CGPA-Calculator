@@ -1,21 +1,21 @@
 /**
- * NU Results Scraper
+ * NU Results Scraper — Vercel-compatible standalone version
  *
- * Fetches and parses exam results from https://results.nu.ac.bd/honours.
+ * This is a self-contained copy of the scraper for use in Vercel serverless
+ * functions. Uses console.log/error instead of pino so worker threads are not
+ * spawned (pino's worker transport doesn't survive serverless cold starts).
  *
- * IMPORTANT: This module must only ever be invoked by an explicit user
- * action (a form submission). It must never run automatically, on a timer,
- * or in bulk/batch loops.
+ * IMPORTANT: Only invoke this from an explicit user action (form submission).
+ * Never call it on a timer, in a loop, or in automated batches.
  */
 
 import axios from "axios";
 import * as cheerio from "cheerio";
-import { logger } from "./logger";
 
 const BASE_URL = "https://results.nu.ac.bd";
 
 /**
- * Each exam category lives on a different form URL on NU's portal.
+ * Each exam category lives at a different form URL on NU's portal.
  * Using the wrong URL returns no results even when the student exists.
  */
 const EXAM_FORM_URLS: Record<string, string> = {
@@ -31,27 +31,26 @@ const EXAM_FORM_URLS: Record<string, string> = {
   "2402": `${BASE_URL}/masters`,   // Masters Final
 };
 
-// Map human-readable exam names → the numeric codes the NU form uses
+/** Human-readable exam names → the numeric codes the NU form uses */
 export const EXAM_NAME_CODES: Record<string, string> = {
-  "Bachelor Degree Honours 1st Year": "2201",
-  "Bachelor Degree Honours 2nd Year": "2202",
-  "Bachelor Degree Honours 3rd Year": "2203",
-  "Bachelor Degree Honours 4th Year": "2204",
-  "Bachelor Degree Honours Consolidated Result": "2205",
-  "Degree Pass 1st Year": "2301",
-  "Degree Pass 2nd Year": "2302",
-  "Degree Pass 3rd Year": "2303",
-  "Masters Preliminary": "2401",
-  "Masters Final": "2402",
+  "Bachelor Degree Honours 1st Year":              "2201",
+  "Bachelor Degree Honours 2nd Year":              "2202",
+  "Bachelor Degree Honours 3rd Year":              "2203",
+  "Bachelor Degree Honours 4th Year":              "2204",
+  "Bachelor Degree Honours Consolidated Result":   "2205",
+  "Degree Pass 1st Year":                          "2301",
+  "Degree Pass 2nd Year":                          "2302",
+  "Degree Pass 3rd Year":                          "2303",
+  "Masters Preliminary":                           "2401",
+  "Masters Final":                                 "2402",
 };
 
 export const EXAM_NAMES = Object.keys(EXAM_NAME_CODES);
 
 /**
- * Static course credit lookup — extracted from the same JSON dataset used by
- * the Calculator. NU's result HTML does not reliably expose a credit column,
- * so we look up by course code here rather than trusting the scraped value.
- * All entries are credit 4 except the two 8-credit practicals below.
+ * Static credit lookup — NU's result HTML doesn't reliably expose a credit
+ * column, so we look up by course code. All codes are 4 credits except two
+ * 8-credit practicals.
  */
 const COURSE_CREDITS: Record<string, number> = {
   "1101": 4, "1102": 4, "1103": 4, "1104": 4, "1105": 4, "1106": 4,
@@ -95,7 +94,7 @@ const COURSE_CREDITS: Record<string, number> = {
   "9601": 4, "9602": 4, "9603": 4, "9604": 4, "9605": 4, "9606": 4,
 };
 
-/** Standard NU grading scale — kept here so the scraper can resolve grade points */
+/** Standard NU grading scale. Includes all known variants of "Fail". */
 const GRADE_POINTS: Record<string, number> = {
   "A+": 4.00,
   "A":  3.75,
@@ -125,9 +124,9 @@ export interface ScrapedResult {
   studentName: string | null;
   fathersName: string | null;
   college: string | null;
-  resultStatus: string | null; // e.g. "Promoted", "Failed"
-  cgpa: number | null;         // server-provided (consolidated results only)
-  computedCGPA: number | null; // calculated from courses
+  resultStatus: string | null;
+  cgpa: number | null;
+  computedCGPA: number | null;
   courses: CourseResult[];
 }
 
@@ -141,9 +140,7 @@ export interface LookupParams {
 /** Safely evaluate a simple "A op B =" arithmetic CAPTCHA without eval(). */
 function solveCaptcha(text: string): number {
   const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
-  if (!match) {
-    throw new Error(`Cannot parse CAPTCHA expression: "${text}"`);
-  }
+  if (!match) throw new Error(`Cannot parse CAPTCHA expression: "${text}"`);
   const a = parseInt(match[1], 10);
   const op = match[2];
   const b = parseInt(match[3], 10);
@@ -152,30 +149,23 @@ function solveCaptcha(text: string): number {
     case "-": return a - b;
     case "*": return a * b;
     case "/": return Math.floor(a / b);
-    default: throw new Error(`Unknown CAPTCHA operator: ${op}`);
+    default:  throw new Error(`Unknown CAPTCHA operator: ${op}`);
   }
 }
 
 /** Extract the arithmetic CAPTCHA from the NU form page. */
 function extractCaptcha($: cheerio.CheerioAPI): string {
   const arithmetic = /\d+\s*[\+\-\*\/]\s*\d+/;
-
-  // Primary: the bold span containing the arithmetic
   const fromBoldSpan = $("span.fw-bold").text().trim();
   if (arithmetic.test(fromBoldSpan)) return fromBoldSpan;
-
-  // Secondary: any span with fs-5
   const fromFs5 = $("span.fs-5").text().trim();
   if (arithmetic.test(fromFs5)) return fromFs5;
-
-  // Fallback: walk all text nodes
   let found = "";
   $("body").find("*").each((_, el) => {
     if (found) return;
     const text = $(el).clone().children().remove().end().text().trim();
     if (arithmetic.test(text)) found = text;
   });
-
   return found;
 }
 
@@ -216,12 +206,12 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     throw new Error(`Unknown examination name: "${params.examName}"`);
   }
 
-  // Route to the correct form URL for this exam category
+  // Route to the correct form URL for this exam type
   const formUrl = EXAM_FORM_URLS[examCode] ?? `${BASE_URL}/honours`;
 
-  logger.info({ roll: params.roll, examName: params.examName, examCode }, "Fetching NU result form");
+  console.log("[scraper] fetching form", { roll: params.roll, examName: params.examName, formUrl });
 
-  // Step 1: GET the search form page — captures session + XSRF cookies
+  // Step 1: GET the form page — captures session + XSRF cookies
   const getResp = await axios.get(formUrl, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
@@ -235,11 +225,8 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   const cookieHeader = cookiesFromHeaders(getResp.headers as Record<string, unknown>);
   const xsrfToken = xsrfFromCookies(cookieHeader);
 
-  logger.info({ status: getResp.status, xsrfPreview: xsrfToken.slice(0, 20) + "…" }, "Form page fetched");
-
   // Step 2: Parse form — CAPTCHA text + hidden CSRF token
   const $ = cheerio.load(getResp.data as string);
-
   const captchaText = extractCaptcha($);
   if (!captchaText) {
     throw new Error(
@@ -248,9 +235,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     );
   }
 
-  // The Laravel _token hidden input
   const csrfToken = $("input[name='_token']").attr("value") ?? "";
-
   const rawAction = $("form").attr("action") ?? formUrl;
   const postUrl = rawAction.startsWith("http")
     ? rawAction
@@ -258,9 +243,9 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
 
   // Step 3: Solve the CAPTCHA
   const captchaAnswer = solveCaptcha(captchaText);
-  logger.info({ captchaText, captchaAnswer }, "CAPTCHA solved");
+  console.log("[scraper] captcha solved", { captchaText, captchaAnswer });
 
-  // Step 4: POST with correct field names (matches the actual NU form)
+  // Step 4: POST the search form
   const formParams = new URLSearchParams();
   formParams.append("_token", csrfToken);
   formParams.append("examination_name", examCode);
@@ -268,8 +253,6 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   formParams.append("examination_roll", params.roll);
   formParams.append("registration_no", params.registrationNo);
   formParams.append("captcha", String(captchaAnswer));
-
-  logger.info({ postUrl }, "Submitting result form");
 
   const postResp = await axios.post(postUrl, formParams.toString(), {
     headers: {
@@ -286,7 +269,7 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
     timeout: 20_000,
   });
 
-  logger.info({ status: postResp.status }, "Result POST response received");
+  console.log("[scraper] POST response", { status: postResp.status });
 
   // Step 5: Parse the result HTML
   const $r = cheerio.load(postResp.data as string);
@@ -338,16 +321,14 @@ export async function lookupNuResult(params: LookupParams): Promise<ScrapedResul
   const courses: CourseResult[] = [];
   $r("table tr").each((_, row) => {
     const cells = $r(row).find("td");
-    if (cells.length < 4) return; // skip header rows
+    if (cells.length < 4) return;
     const code       = $r(cells[0]).text().trim();
     const subject    = $r(cells[1]).text().trim();
     const creditText = $r(cells[2]).text().trim();
     const grade      = $r(cells[3]).text().trim();
 
-    if (!code || !/^\d/.test(code)) return; // course codes start with digits
+    if (!code || !/^\d/.test(code)) return;
 
-    // Prefer the scraped credit value; fall back to the static lookup.
-    // NU's result HTML doesn't reliably expose a credit column.
     const scrapedCredit = creditText && !isNaN(parseFloat(creditText)) ? parseFloat(creditText) : null;
     const credit = scrapedCredit ?? COURSE_CREDITS[code] ?? null;
     const gradePoint = grade in GRADE_POINTS ? GRADE_POINTS[grade] : null;

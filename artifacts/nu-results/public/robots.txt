@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+
+# Block the raw API endpoints from indexing — only index the UI pages
+Disallow: /api/
+
+# Sitemap location — replace with your actual domain after deploying to Vercel
+Sitemap: https://your-domain.vercel.app/sitemap.xml
