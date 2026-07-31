@@ -170,6 +170,9 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.9.5
       '@vercel/node':
         specifier: ^5.0.0
         version: 5.9.2(rollup@4.62.3)
