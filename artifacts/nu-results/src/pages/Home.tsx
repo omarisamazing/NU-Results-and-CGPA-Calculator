@@ -96,12 +96,14 @@ export default function Home() {
       .map((c: CourseResult) => ({
         code: c.code,
         name: c.subject,
-        credit: c.credit ?? creditLookup.get(c.code) ?? 0,
+        // NU standard credit is 4 for virtually all courses — use as fallback
+        // so CGPA estimates compute correctly even when the static map misses
+        credit: c.credit ?? creditLookup.get(c.code) ?? 4,
       }))
 
     // Compute CGPA client-side (used as fallback when server didn't provide one)
     const courses = result.courses.map((c: CourseResult) => ({
-      credit: c.credit ?? creditLookup.get(c.code) ?? 0,
+      credit: c.credit ?? creditLookup.get(c.code) ?? 4,
       gradePoint: c.gradePoint ?? null,
     }))
     const { cgpa: computed } = computeCGPA(courses)
@@ -120,7 +122,7 @@ export default function Home() {
         const gp = isFailed
           ? (gradeToPoint(hypotheticalGrades[c.code]) ?? null)
           : (c.gradePoint ?? null)
-        return { credit: c.credit ?? creditLookup.get(c.code) ?? 0, gradePoint: gp }
+        return { credit: c.credit ?? creditLookup.get(c.code) ?? 4, gradePoint: gp }
       })
       const { cgpa } = computeCGPA(courses)
       return cgpa
@@ -386,10 +388,7 @@ export default function Home() {
                       </TableCell>
                       <TableCell className="font-sans font-medium text-sm">{course.subject}</TableCell>
                       <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                        {(() => {
-                          const cr = course.credit ?? creditLookup.get(course.code) ?? null
-                          return cr != null ? cr : "—"
-                        })()}
+                        {course.credit ?? creditLookup.get(course.code) ?? 4}
                       </TableCell>
                       <TableCell className={cn(
                         "text-right font-mono text-sm font-semibold",
